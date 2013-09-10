@@ -17,15 +17,16 @@
 import pyrax
 import os
 import sys
+import time
 
 def make_choice(item_list, prompt):
 
 	for index, item in enumerate(item_list):
 		print index, item
-	selection = -1
-	while selection < 0 or selection > len(item_list) - 1:
-		selection = raw_input(prompt)
-	return item_list[selection]
+	choice = -1
+	while choice < 0 or choice > len(item_list) - 1:
+		choice = int(raw_input(prompt))
+	return item_list[choice]
 
 def valid_flavor_menu(cs, prompt, min_id=2):
 
@@ -46,7 +47,7 @@ def valid_flavor_menu(cs, prompt, min_id=2):
 	while choice < 0 or choice > len(flavors) - 1:
 		if choice is not None:
 			print ' ** Not a valid flavor ID ** '
-		choice = raw_input(prompt)
+		choice = int(raw_input(prompt))
 	return flavors[choice]
 
 def fuzzy_choose_flavor(cs, prompt, flavor_ram = None):
@@ -55,7 +56,7 @@ def fuzzy_choose_flavor(cs, prompt, flavor_ram = None):
 		return valid_flavor_menu(cs, prompt)
 
 	else:
-		flavors = [flavor for flavor in cs.flavors.list() if flavor.ram = flavor_ram]
+		flavors = [flavor for flavor in cs.flavors.list() if flavor.ram == flavor_ram]
 		if flavors == None or len(flavors) > 1:
 			print 'Matching flavor not found'
 			return valid_flavor_menu(cs, prompt)
@@ -99,6 +100,7 @@ def choose_region(region):
 	while region not in pyrax.regions:
 		region = raw_input('Please supply a valid region.\n[' 
 			+ ' '.join(regions) + ']: ')
+	return region
 
 def create_servers(cs, servers,  update_freq = 20):
 
@@ -106,14 +108,14 @@ def create_servers(cs, servers,  update_freq = 20):
 	default_nics = {'net-id': pyrax.cloudnetworks.PUBLIC_NET_ID,
 					'net-id': pyrax.cloudnetworks.SERVICE_NET_ID}
 
-	for server in server_list:
+	for server in servers:
 		print 'Creating server "{}" from "{}"...'.format(server['name'], 
 			server['image'].name)
 		try:
 			server_object = cs.servers.create(server['name'], server['image'],
-				server['flavor'], files = server.get(files, None), 
-				nics = server.get(nics, default_nics), 
-				meta = server.get(meta, None))
+				server['flavor'], files = server.get('files', None), 
+				nics = server.get('nics', default_nics), 
+				meta = server.get('meta', None))
 		except Exception, e:
 			print 'Error in server creation: {}'.format(e)
 		else:
@@ -121,7 +123,7 @@ def create_servers(cs, servers,  update_freq = 20):
 
 	print '\nCredentials:'
 	for server, admin_pass in new_servers:
-		print server.name, admin_passs
+		print server.name, admin_pass
 	print
 
 	completed = []

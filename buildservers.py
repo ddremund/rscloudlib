@@ -31,7 +31,7 @@ def main():
 	parser = argparse.ArgumentParser(
 		description = 'Builds multiple cloud servers given a flavor, image, '
 		'and base name.',
-		epilog = 'Ex: {} -r DFW -b web -n 3 -i 'Ubuntu 11.10' -f 512 - builds '
+		epilog = 'Ex: {} -r DFW -b web -n 3 -i "Ubuntu 11.10" -f 512 - builds '
 		'web1, web2, and web3 in DFW'.format(__file__))
 
 	parser.add_argument('-r', '--region', help = 'Cloud Servers region to ' 
@@ -71,27 +71,29 @@ def main():
 
 	cs = pyrax.connect_to_cloudservers(region = region)	
 
-	flavor = rscloudlib.fuzzy_choose_flavor(cs, prompt, args.flavor_ram)
-	image = rscloudlib.fuzzy_choose_image(cs, prompt, args.image_name)
+	flavor = rscloudlib.fuzzy_choose_flavor(cs, 'Choose flavor: ', args.flavor_ram)
+	image = rscloudlib.fuzzy_choose_image(cs, 'Choose image: ', args.image_name)
 
-	nics = {'net-id': pyrax.cloudnetworks.PUBLIC_NET_ID,
-			'net-id': pyrax.cloudnetworks.SERVICE_NET_ID}
+	nics = [{'net-id': pyrax.cloudnetworks.PUBLIC_NET_ID},
+			{'net-id': pyrax.cloudnetworks.SERVICE_NET_ID}]
 
 	if args.networks is not None:
 		cnw = pyrax.connect_to_cloud_networks(region = region)
 		network_names = args.networks.split(',')
 		for network_name in network_names:
-			network = cnw.find_network_by_name(network_name)
-			if network is None:
-				choice = raw_input('Network "{}" not found.  Create it? [y/N]')
-				if choice.capitalize != 'Y':
+			try:
+				network = cnw.find_network_by_name(network_name)
+			except:
+				choice = raw_input('Network "{}" not found.  Create it? [y/N]: '.format(network_name))
+				if choice.capitalize() != 'Y':
 					continue
-				cidr = raw_input('CIDR block to use: ')
+				cidr = raw_input('CIDR block to use (e.g. 192.168.3.0/24): ')
 				try:
 					network = cnw.create(network_name, cidr = cidr)
 				except Exception, e:
 					print 'Error creating network:', e
 					continue
+				print "Network Created."
 			nics.append({'net-id': network.id})
 
 	files = None
@@ -106,14 +108,14 @@ def main():
 			files = {'/root/.ssh/authorized_keys': key}
 
 	servers = []
-	for i in range(args.start, args.start + args.number)
+	for i in range(args.start, args.start + args.number):
 		servers.append({'name': '{}{}'.format(args.base, i),
 						'image': image,
 						'flavor': flavor,
 						'nics': nics,
 						'files': files})
 
-	print 'Building {} servers with base name "{}", flavor "{}", and image "{}".'.format(len(servers), 
+	print '\nBuilding {} servers with base name "{}", flavor "{}", and image "{}".'.format(len(servers), 
 										args.base, flavor.name, image.name)
 	choice = raw_input('Proceed? [y/N]: ')
 	if choice.capitalize() != 'Y':
@@ -124,7 +126,7 @@ def main():
 
 	if args.block_storage is not None:
 
-		print 'Creating and attaching block storage volumes...'
+		print '\nCreating and attaching block storage volumes...'
 		cbs = pyrax.connect_to_cloud_blockstorage(region = region)
 		for server, admin_pass in created_servers:
 			try:
@@ -135,7 +137,7 @@ def main():
 				print 'Error creating volume for server "{}":'.format(server.name), e
 				continue
 			print 'Created volume {}.'.format(volume.name)
-			volue.attach_to_instance(server, mountpoint = args.attachment_point)
+			volume.attach_to_instance(server, mountpoint = args.attachment_point)
 			volume = wait_until(volume, 'status', 'in-use', interval = 5, 
 				attempts = 24, verbose = True)
 			if volume is None:
@@ -144,7 +146,7 @@ def main():
 				print 'Volume "{}" attached to "{}".\n'.format(volume.name,
 																server.name)
 
-
+	print '\nBuilds complete.\n'
 
 if __name__ == '__main__':
 	main()
