@@ -100,7 +100,7 @@ def choose_region(region):
 		region = raw_input('Please supply a valid region.\n[' 
 			+ ' '.join(regions) + ']: ')
 
-def create_servers(cs, servers):
+def create_servers(cs, servers,  update_freq = 20):
 
 	new_servers = []
 	default_nics = {'net-id': pyrax.cloudnetworks.PUBLIC_NET_ID,
@@ -124,7 +124,7 @@ def create_servers(cs, servers):
 	total_servers = len(new_servers)
 
 	while new_servers:
-		time.sleep(20)
+		time.sleep(update_freq)
 		new_servers_copy = list(new_servers)
 		for server, admin_pass in new_servers_copy:
 			server = cs.servers.get(server.id)
