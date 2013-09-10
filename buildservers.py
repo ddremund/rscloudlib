@@ -49,6 +49,8 @@ def main():
 	parser.add_argument('-m', '--networks', default = None,  
 		help = 'Additional Cloud Networks to attach to the server.  Supply '
 		' as a comma-separated list, e.g. network1,network2,network3')
+	parser.add_argument('-k', '--keyfile', default = None, 
+		help = 'SSH Key to be installed at /root/.ssh/authorized_keys.')
 	parser.add_argument('-d', '--block_storage', type = int, default = None, 
 		help = 'Amount of block storage to auto-attach; defaults to none.')
 	parser.add_argument('-v', '--volume_base', default = 'Volume-',
@@ -92,12 +94,24 @@ def main():
 					continue
 			nics.append({'net-id': network.id})
 
+	files = None
+	if args.keyfile is not None:
+		try:
+			with open(os.path.abspath(args.keyfile)) as f:
+				key = f.read()
+		except Exception, e:
+			print 'Error opening SSH key file:', e
+			sys.exit(1)
+		else:
+			files = {'/root/.ssh/authorized_keys': key}
+
 	servers = []
 	for i in range(args.start, args.start + args.number)
 		servers.append({'name': '{}{}'.format(args.base, i),
 						'image': image,
 						'flavor': flavor,
-						'nics': nics})
+						'nics': nics,
+						'files': files})
 
 	print 'Building {} servers with base name "{}", flavor "{}", and image "{}".'.format(len(servers), 
 										args.base, flavor.name, image.name)
