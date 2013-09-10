@@ -119,6 +119,11 @@ def create_servers(cs, servers,  update_freq = 20):
 		else:
 			new_servers.append((server_object, server_object.adminPass))
 
+	print '\nCredentials:'
+	for server, admin_pass in new_servers:
+		print server.name, admin_passs
+	print
+
 	completed = []
 	errored = []
 	total_servers = len(new_servers)

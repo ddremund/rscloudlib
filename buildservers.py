@@ -58,7 +58,7 @@ def main():
 	parser.add_argument('-y', '--volume_type', default = 'SATA', 
 		choices = ['SATA', 'SSD'], help = 'Volume type for CBS; '
 		'defaults to SATA.')
-	parser.add_argument('-p', '--mount_point', default = '/dev/xvdb', 
+	parser.add_argument('-p', '--attachment_point', default = '/dev/xvdb', 
 		help = 'Mount point for CBS volumes; defaults to /dev/xvdb.')
 	parser.add_argument('-c', '--creds_file', default = default_creds_file, 
 		help = 'Location of credentials file; '
@@ -135,7 +135,7 @@ def main():
 				print 'Error creating volume for server "{}":'.format(server.name), e
 				continue
 			print 'Created volume {}.'.format(volume.name)
-			volue.attach_to_instance(server, mountpoint = args.mount_point)
+			volue.attach_to_instance(server, mountpoint = args.attachment_point)
 			volume = wait_until(volume, 'status', 'in-use', interval = 5, 
 				attempts = 24, verbose = True)
 			if volume is None:
