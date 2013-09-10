@@ -27,7 +27,7 @@ def make_choice(item_list, prompt):
 		selection = raw_input(prompt)
 	return item_list[selection]
 
-def flavor_menu(cs, prompt, min_id=2):
+def valid_flavor_menu(cs, prompt, min_id=2):
 
 	flavors = cs.flavors.list()
 	minimum_ram = cs.flavors.get(min_id).ram
@@ -49,13 +49,29 @@ def flavor_menu(cs, prompt, min_id=2):
 		choice = raw_input(prompt)
 	return flavors[choice]
 
+def fuzzy_choose_flavor(cs, prompt, flavor_ram = None):
+
+	if flavor_ram is None:
+		return valid_flavor_menu(cs, prompt)
+
+	else:
+		flavors = [flavor for flavor in cs.flavors.list() if flavor.ram = flavor_ram]
+		if flavors == None or len(flavors) > 1:
+			print 'Matching flavor not found'
+			return valid_flavor_menu(cs, prompt)
+		elif len(flavors) == 1:
+			return flavors[0]
+		else:
+			print 'More than one flavor match found'
+			return make_choice(flavors, prompt)
+
 def fuzzy_choose_image(cs, prompt, image_name = None):
 
 	if image_name is None:
 		return make_choice(cs.images.list(), prompt)
 	else:
 		images = [img for img in cs.images.list() if image_name in img.name]
-		if image == None or len(image) < 1:
+		if images == None or len(images) < 1:
 			print 'Matching image not found'
 			return make_choice(cs.images.list(), prompt)
 		elif len(images) == 1:
