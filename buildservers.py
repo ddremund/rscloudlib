@@ -37,7 +37,7 @@ def main():
 	parser.add_argument('-r', '--region', help = 'Cloud Servers region to ' 
 		'connect to.  Menu provided if absent.')
 	parser.add_argument('-b', '--base', required = True, 
-		help = "Base name for servers.")
+		help = "Base name for servers; used as name when creating single server.")
 	parser.add_argument('-n', '--number', type = int, default = 1, 
 		help = "Number of servers to build; defaults to 1.")
 	parser.add_argument('-s', '--start', type = int, default = 1, 
@@ -46,7 +46,7 @@ def main():
 		help = "Image name to use to build server.  Menu provided if absent.")
 	parser.add_argument('-f', '--flavor_ram', type = int, 
 		help = "RAM of flavor to use in MB.  Menu provided if absent.")
-	parser.add_argument('-m', '--networks', default = None,  
+	parser.add_argument('-w', '--networks', default = None,  
 		help = 'Additional Cloud Networks to attach to the server.  Supply '
 		' as a comma-separated list, e.g. network1,network2,network3')
 	parser.add_argument('-k', '--keyfile', default = None, 
@@ -115,14 +115,24 @@ def main():
 						'nics': nics,
 						'files': files})
 
-	print '\nBuilding {} servers with base name "{}", flavor "{}", and image "{}".'.format(len(servers), 
+	print '\nBuilding {} server(s) with base name "{}", flavor "{}", and image "{}".'.format(len(servers), 
 										args.base, flavor.name, image.name)
 	choice = raw_input('Proceed? [y/N]: ')
 	if choice.capitalize() != 'Y':
 		print "Exiting..."
 		sys.exit(0)
 
-	created_servers = rscloudlib.create_servers(cs, servers)
+	if len(servers) > 1:
+		created_servers = rscloudlib.create_servers(cs, servers)
+	else:
+		server = servers[0]
+		created_server = cs.servers.create(server['name'], server['image'],
+				server['flavor'], files = server['files'], 
+				nics = server['nics'])
+		admin_pass = created_server.adminPass
+		created_server = wait_until(created_server, 'status', 'ACTIVE', 
+			interval = 30, verbose = True)
+		created_servers = [(created_server, admin_pass)]
 
 	if args.block_storage is not None:
 

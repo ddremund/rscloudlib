@@ -114,8 +114,7 @@ def create_servers(cs, servers,  update_freq = 20):
 		try:
 			server_object = cs.servers.create(server['name'], server['image'],
 				server['flavor'], files = server.get('files', None), 
-				nics = server.get('nics', default_nics), 
-				meta = server.get('meta', None))
+				nics = server.get('nics', default_nics))
 		except Exception, e:
 			print 'Error in server creation: {}'.format(e)
 		else:
