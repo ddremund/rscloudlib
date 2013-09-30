@@ -88,6 +88,14 @@ def print_server(server):
 	print 'Status:', server.status
 	print 'Networks:', server.networks
 
+def print_flavor(flavor):
+	print "ID:", flavor.id
+	print "Name:", flavor.name
+	print "RAM:", flavor.ram
+	print "Disk:", flavor.disk
+	print "vCPUs:", flavor.vcpus
+	print
+
 def set_creds(filename):
 
 	pyrax.set_setting('identity_type', 'rackspace')
