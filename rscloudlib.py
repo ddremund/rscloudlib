@@ -25,7 +25,10 @@ def make_choice(item_list, prompt):
 		print index, item
 	choice = -1
 	while choice < 0 or choice > len(item_list) - 1:
-		choice = int(raw_input(prompt))
+		try:
+			choice = int(raw_input(prompt))
+		except ValueError:
+			print "Input must be a valid integer."
 	return item_list[choice]
 
 def valid_flavor_menu(cs, prompt, min_id=2):
