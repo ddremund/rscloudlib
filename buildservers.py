@@ -123,7 +123,9 @@ def main():
 		sys.exit(0)
 
 	if len(servers) > 1:
-		created_servers = rscloudlib.create_servers(cs, servers)
+		new_servers = rscloudlib.create_servers(cs, servers)
+		created_servers, errored_servers = rscloudlib.track_servers(cs, 
+			new_servers)
 	else:
 		server = servers[0]
 		created_server = cs.servers.create(server['name'], server['image'],

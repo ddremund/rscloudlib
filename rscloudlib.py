@@ -46,9 +46,9 @@ def valid_flavor_menu(cs, prompt, min_id=2):
 		print 'vCPUs:', flavor.vcpus
 		print
 
-	choice = -1
+	choice = 999
 	while choice < 0 or choice > len(flavors) - 1:
-		if choice is not None:
+		if choice is not None and choice != 999:
 			print ' ** Not a valid flavor ID ** '
 		choice = int(raw_input(prompt))
 	return flavors[choice]
@@ -113,7 +113,42 @@ def choose_region(region):
 			+ ' '.join(regions) + ']: ')
 	return region
 
-def create_servers(cs, servers,  update_freq = 20):
+def track_servers(cs, new_servers, update_freq = 20):
+	
+	completed = []
+	errored = []
+	
+	total_servers = len(new_servers)
+	
+	while new_servers:
+		time.sleep(update_freq)
+		new_servers_copy = list(new_servers)
+		for server, admin_pass in new_servers_copy:
+			server = cs.servers.get(server.id)
+			if server.status == 'ERROR':
+				print '{} - Error in server creation.'.format(server.name)
+				errored.append((server, admin_pass))
+				new_servers.remove((server, admin_pass))
+				continue
+			print '{} - {}% complete'.format(server.name, server.progress)
+			if server.status == 'ACTIVE':
+				completed.append((server, admin_pass))
+				new_servers.remove((server, admin_pass))
+		print '{} of {} server(s) completed.'.format(len(completed), total_servers)
+				
+	print '{} of {} server(s) completed successfully.'.format(len(completed), total_servers)
+	print
+	
+	for server, admin_pass in sorted(completed, key= lambda item: item[0].name):
+		print_server(server)
+		print 'Admin Password:', admin_pass
+		print
+		
+	print 'Servers with build errors:', ', '.join([server.name for server in errored])
+	
+	return (completed, errored)
+
+def create_servers(cs, servers):
 
 	new_servers = []
 	default_nics = {'net-id': pyrax.cloudnetworks.PUBLIC_NET_ID,
@@ -136,36 +171,4 @@ def create_servers(cs, servers,  update_freq = 20):
 		print server.name, admin_pass
 	print
 
-	completed = []
-	errored = []
-	total_servers = len(new_servers)
-
-	while new_servers:
-		time.sleep(update_freq)
-		new_servers_copy = list(new_servers)
-		for server, admin_pass in new_servers_copy:
-			server = cs.servers.get(server.id)
-			if server.status == 'ERROR':
-				print '{} - Error in server creation.'.format(server.name)
-				errored.append((server, admin_pass))
-				new_servers.remove((server, admin_pass))
-				total_servers -= 1
-				continue
-			print '{} - {}% complete'.format(server.name, server.progress)
-			if server.status == 'ACTIVE':
-				completed.append((server, admin_pass))
-				new_servers.remove((server, admin_pass))
-			
-		print '{} of {} servers completed'.format(len(completed), total_servers)
-				
-
-	print '\n{} Server(s) created.\n'.format(len(completed))
-	for server, admin_pass in sorted(completed, key= lambda item: item[0].name): 
-		print_server(server)
-		print 'Admin Password:', admin_pass
-		print
-
-	print 'Servers with build errors:', ' '.join([server.name 
-												for server in errored])
-
-	return completed
+	return new_servers
