@@ -169,11 +169,11 @@ def create_servers(cs, servers):
 		except Exception, e:
 			print 'Error in server creation: {}'.format(e)
 		else:
-			new_servers.append((server_object, server_object.adminPass))
+			new_servers.append(server_object)
 
 	print '\nCredentials:'
-	for server, admin_pass in new_servers:
-		print server.name, admin_pass
+	for server in new_servers:
+		print server.name, server.adminPass
 	print
 
 	return new_servers
