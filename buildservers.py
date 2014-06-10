@@ -136,13 +136,14 @@ def main():
 		admin_pass = created_server.adminPass
 		created_server = wait_until(created_server, 'status', 'ACTIVE', 
 			interval = 30, verbose = True)
-		created_servers = [(created_server, admin_pass)]
+		created_server.adminPass = admin_pass
+		created_servers = [created_server]
 
 	if args.block_storage is not None:
 
 		print '\nCreating and attaching block storage volumes...'
 		cbs = pyrax.connect_to_cloud_blockstorage(region = region)
-		for server, admin_pass in created_servers:
+		for server in created_servers:
 			try:
 				volume = cbs.create(name = '{}{}'.format(args.volume_base, 
 					server.name), size = args.block_storage, volume_type = 
