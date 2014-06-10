@@ -31,6 +31,21 @@ def make_choice(item_list, prompt):
 			print "Input must be a valid integer."
 	return item_list[choice]
 
+def choose_attribute(provider, attr_name = None, prompt = 'Choose an item: '):
+
+    if attr_name is None:
+        return make_choice(provider.list(), prompt)
+    else:
+        attributes = [attr for attr in provider.list() if attr_name in attr.name]
+        if attributes is None or len(attributes) < 1:
+            print 'Matching attribute not found'
+            return make_choice(provider.list(), prompt)
+        elif len(attributes) == 1:
+            return attributes[0]
+        else:
+            print 'More than one attribute match found'
+            return make_choice(attributes, prompt)
+
 def valid_flavor_menu(cs, prompt, min_id=2):
 
 	flavors = cs.flavors.list()
@@ -90,6 +105,7 @@ def print_server(server):
 	print 'ID:', server.id
 	print 'Status:', server.status
 	print 'Networks:', server.networks
+	print
 
 def print_flavor(flavor):
 	print "ID:", flavor.id
@@ -113,6 +129,7 @@ def choose_region(region):
 			+ ' '.join(regions) + ']: ')
 	return region
 
+'''
 def track_servers(cs, new_servers, update_freq = 20):
 	
 	completed = []
@@ -147,6 +164,49 @@ def track_servers(cs, new_servers, update_freq = 20):
 	print 'Servers with build errors:', ', '.join([server.name for server in errored])
 	
 	return (completed, errored)
+'''
+
+def track_servers(cs, new_servers, update_freq = 10):
+    
+    completed = []
+    failed = []
+    
+    total_servers = len(new_servers)
+    
+    admin_passwords = {}
+    for server in new_servers:
+        admin_passwords[server.id] = server.adminPass
+    
+    #admin_passwords = {}
+    
+    while new_servers:
+        
+        time.sleep(update_freq)
+        new_servers_copy = list(new_servers)
+        for server in new_servers_copy:
+            server = cs.servers.get(server.id)
+            if server.status == 'ERROR':
+                print '{} - Error in creation.'.format(server.name)
+                failed.append(server)
+                new_servers.remove(server)
+                continue
+            if server.status == 'ACTIVE':
+                completed.append(server)
+                new_servers.remove(server)
+            print '{} - {}% complete'.format(server.name, server.progress)
+    
+    print '{} of {} server(s) completed successfully.'.format(len(completed), total_servers)
+    
+    for server in sorted(completed, key = lambda item: item.name):
+        print 'Name:', server.name
+        print 'ID:', server.id
+        print 'Access Address:', server.accessIPv4
+        print 'Admin Password:', admin_passwords[server.id]
+        print
+        
+    print 'Servers with build errors:', ', '.join(sorted([server.name for server in failed]))
+    
+    return (completed, failed)
 
 def create_servers(cs, servers):
 
