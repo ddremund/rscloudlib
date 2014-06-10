@@ -44,8 +44,8 @@ def main():
 		help = 'Server index to start with; defaults to 1.')
 	parser.add_argument('-i', '--image_name', 
 		help = "Image name to use to build server.  Menu provided if absent.")
-	parser.add_argument('-f', '--flavor_ram', type = int, 
-		help = "RAM of flavor to use in MB.  Menu provided if absent.")
+	parser.add_argument('-f', '--flavor_name', 
+		help = "Name of flavor to use.  Menu provided if absent.")
 	parser.add_argument('-w', '--networks', default = None,  
 		help = 'Additional Cloud Networks to attach to the server.  Supply '
 		' as a comma-separated list, e.g. network1,network2,network3')
@@ -71,8 +71,10 @@ def main():
 
 	cs = pyrax.connect_to_cloudservers(region = region)	
 
-	flavor = rscloudlib.fuzzy_choose_flavor(cs, 'Choose flavor: ', args.flavor_ram)
-	image = rscloudlib.fuzzy_choose_image(cs, 'Choose image: ', args.image_name)
+	flavor = rscloudlib.choose_attribute(cs.flavors, 
+		attr_name = args.flavor_name, prompt = 'Choose a flavor: ')
+	image = rscloudlib.choose_attribute(cs.images, 
+		attr_name = args.image_name, prompt = 'Choose an image: ')
 
 	nics = [{'net-id': pyrax.cloudnetworks.PUBLIC_NET_ID},
 			{'net-id': pyrax.cloudnetworks.SERVICE_NET_ID}]

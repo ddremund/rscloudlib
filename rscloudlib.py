@@ -46,66 +46,12 @@ def choose_attribute(provider, attr_name = None, prompt = 'Choose an item: '):
             print 'More than one attribute match found'
             return make_choice(attributes, prompt)
 
-def valid_flavor_menu(cs, prompt, min_id=2):
-
-	flavors = cs.flavors.list()
-	minimum_ram = cs.flavors.get(min_id).ram
-	flavors = [flavor for flavor in flavors if flavor.ram >= minimum_ram]
-	
-	print '\nValid flavors: \n'
-	for index, flavor in enumerate(flavors):
-		print 'Choice ', index
-		print 'ID | Name:', '{} | {}'.format(flavor.id, flavor.name)
-		print 'RAM:', flavor.ram
-		print 'Disk:', flavor.disk
-		print 'vCPUs:', flavor.vcpus
-		print
-
-	choice = 999
-	while choice < 0 or choice > len(flavors) - 1:
-		if choice is not None and choice != 999:
-			print ' ** Not a valid flavor ID ** '
-		choice = int(raw_input(prompt))
-	return flavors[choice]
-
-def fuzzy_choose_flavor(cs, prompt, flavor_ram = None):
-
-	if flavor_ram is None:
-		return valid_flavor_menu(cs, prompt)
-
-	else:
-		flavors = [flavor for flavor in cs.flavors.list() if flavor.ram == flavor_ram]
-		if flavors == None or len(flavors) > 1:
-			print 'Matching flavor not found'
-			return valid_flavor_menu(cs, prompt)
-		elif len(flavors) == 1:
-			return flavors[0]
-		else:
-			print 'More than one flavor match found'
-			return make_choice(flavors, prompt)
-
-def fuzzy_choose_image(cs, prompt, image_name = None):
-
-	if image_name is None:
-		return make_choice(cs.images.list(), prompt)
-	else:
-		images = [img for img in cs.images.list() if image_name in img.name]
-		if images == None or len(images) < 1:
-			print 'Matching image not found'
-			return make_choice(cs.images.list(), prompt)
-		elif len(images) == 1:
-			return images[0]
-		else:
-			print 'More than one image match found'
-			return make_choice(images, prompt)
-
 def print_server(server):
 
 	print 'Name:', server.name
 	print 'ID:', server.id
 	print 'Status:', server.status
 	print 'Networks:', server.networks
-	print
 
 def print_flavor(flavor):
 	print "ID:", flavor.id
@@ -113,7 +59,6 @@ def print_flavor(flavor):
 	print "RAM:", flavor.ram
 	print "Disk:", flavor.disk
 	print "vCPUs:", flavor.vcpus
-	print
 
 def set_creds(filename):
 
@@ -197,12 +142,12 @@ def track_servers(cs, new_servers, update_freq = 10):
     
     print '{} of {} server(s) completed successfully.'.format(len(completed), total_servers)
     
-    for server in sorted(completed, key = lambda item: item.name):
-        print 'Name:', server.name
-        print 'ID:', server.id
-        print 'Access Address:', server.accessIPv4
+    completed.sort(key = lambda item: item.name)
+    for server in completed:
+        print_server(server)
         print 'Admin Password:', admin_passwords[server.id]
         print
+        server.adminPass = admin_passwords[server.id]
         
     print 'Servers with build errors:', ', '.join(sorted([server.name for server in failed]))
     
