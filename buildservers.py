@@ -46,7 +46,7 @@ def main():
 		help = "Image name to use to build server.  Menu provided if absent.")
 	parser.add_argument('-f', '--flavor_name', 
 		help = "Name of flavor to use.  Menu provided if absent.")
-	parser.add_argument('-w', '--networks', default = None,  
+	parser.add_argument('-w', '--network_names', default = None,  
 		help = 'Additional Cloud Networks to attach to the server.  Supply '
 		' as a comma-separated list, e.g. network1,network2,network3')
 	parser.add_argument('-k', '--keyfile', default = None, 
@@ -79,9 +79,9 @@ def main():
 	nics = [{'net-id': pyrax.cloudnetworks.PUBLIC_NET_ID},
 			{'net-id': pyrax.cloudnetworks.SERVICE_NET_ID}]
 
-	if args.networks is not None:
+	if args.network_names is not None:
 		cnw = pyrax.connect_to_cloud_networks(region = region)
-		network_names = args.networks.split(',')
+		network_names = args.network_names.split(',')
 		for network_name in network_names:
 			try:
 				network = cnw.find_network_by_name(network_name)

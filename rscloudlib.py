@@ -140,7 +140,7 @@ def track_servers(cs, new_servers, update_freq = 10):
                 new_servers.remove(server)
             print '{} - {}% complete'.format(server.name, server.progress)
     
-    print '{} of {} server(s) completed successfully.'.format(len(completed), total_servers)
+    print '{} of {} server(s) completed successfully.\n'.format(len(completed), total_servers)
     
     completed.sort(key = lambda item: item.name)
     for server in completed:
