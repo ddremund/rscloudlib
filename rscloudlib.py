@@ -74,42 +74,6 @@ def choose_region(region):
 			+ ' '.join(regions) + ']: ')
 	return region
 
-'''
-def track_servers(cs, new_servers, update_freq = 20):
-	
-	completed = []
-	errored = []
-	
-	total_servers = len(new_servers)
-	
-	while new_servers:
-		time.sleep(update_freq)
-		new_servers_copy = list(new_servers)
-		for server, admin_pass in new_servers_copy:
-			server = cs.servers.get(server.id)
-			if server.status == 'ERROR':
-				print '{} - Error in server creation.'.format(server.name)
-				errored.append((server, admin_pass))
-				new_servers.remove((server, admin_pass))
-				continue
-			print '{} - {}% complete'.format(server.name, server.progress)
-			if server.status == 'ACTIVE':
-				completed.append((server, admin_pass))
-				new_servers.remove((server, admin_pass))
-		print '{} of {} server(s) completed.'.format(len(completed), total_servers)
-				
-	print '{} of {} server(s) completed successfully.'.format(len(completed), total_servers)
-	print
-	
-	for server, admin_pass in sorted(completed, key= lambda item: item[0].name):
-		print_server(server)
-		print 'Admin Password:', admin_pass
-		print
-		
-	print 'Servers with build errors:', ', '.join([server.name for server in errored])
-	
-	return (completed, errored)
-'''
 
 def track_servers(cs, new_servers, update_freq = 10):
     
@@ -118,11 +82,11 @@ def track_servers(cs, new_servers, update_freq = 10):
     
     total_servers = len(new_servers)
     
-    admin_passwords = {}
-    for server in new_servers:
-        admin_passwords[server.id] = server.adminPass
-    
     #admin_passwords = {}
+    #for server in new_servers:
+    #    admin_passwords[server.id] = server.adminPass
+    
+    admin_passwords = {id: password for (id, password) in [(server.id, server.adminPass) for server in new_servers]}
     
     while new_servers:
         
