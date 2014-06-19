@@ -135,8 +135,11 @@ def main():
 				nics = server['nics'])
 		admin_pass = created_server.adminPass
 		created_server = wait_until(created_server, 'status', 'ACTIVE', 
-			interval = 30, verbose = True)
+			interval = 10, verbose = True, verbose_atts = ['progress'])
 		created_server.adminPass = admin_pass
+		rscloudlib.print_server(created_server)
+		print created_server.adminPass
+		print
 		created_servers = [created_server]
 
 	if args.block_storage is not None:
